@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from payments_pipeline.utils.time import to_iso, utc_now
 
@@ -44,7 +44,8 @@ class ManifestStore:
         latest = self.root / "_latest" / f"{model}.json"
         if not latest.exists():
             return None
-        return json.loads(latest.read_text(encoding="utf-8"))
+        payload = json.loads(latest.read_text(encoding="utf-8"))
+        return cast(dict[str, Any], payload)
 
     def write_reconciliation(self, dt: str, report: dict[str, Any]) -> Path:
         path = self.root / f"recon_{dt}.json"

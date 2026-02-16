@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -9,7 +10,7 @@ from typing import Any
 from payments_pipeline.config.logging import get_logger
 
 try:
-    import duckdb
+    duckdb: Any = importlib.import_module("duckdb")
 except Exception:  # pragma: no cover
     duckdb = None
 
@@ -62,9 +63,10 @@ def run_schema_checks(base_dir: Path) -> list[CheckResult]:
             messages.append(f"missing columns: {sorted(missing)}")
 
         for col in rules.get("not_null", []):
-            null_count = conn.execute(
+            row = conn.execute(
                 f"SELECT COUNT(*) FROM read_parquet('{parquet_path.as_posix()}') WHERE {col} IS NULL"
-            ).fetchone()[0]
+            ).fetchone()
+            null_count = int(row[0]) if row is not None else 0
             if null_count > 0:
                 passed = False
                 messages.append(f"column {col} has {null_count} nulls")

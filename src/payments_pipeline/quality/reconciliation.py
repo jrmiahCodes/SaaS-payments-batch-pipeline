@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -10,7 +11,7 @@ from payments_pipeline.config.logging import get_logger
 from payments_pipeline.state.manifests import ManifestStore
 
 try:
-    import duckdb
+    duckdb: Any = importlib.import_module("duckdb")
 except Exception:  # pragma: no cover
     duckdb = None
 
@@ -56,9 +57,10 @@ def run_reconciliation(
         )
         silver_count = 0
         if silver_files:
-            silver_count = conn.execute(
+            row = conn.execute(
                 f"SELECT COUNT(*) FROM read_parquet('{silver_files[-1].as_posix()}')"
-            ).fetchone()[0]
+            ).fetchone()
+            silver_count = int(row[0]) if row is not None else 0
 
         diff = abs(bronze_count - silver_count)
         tolerance = max(1, int(bronze_count * tolerance_ratio))
@@ -91,13 +93,14 @@ def run_reconciliation(
             WHERE nullif(trim(c.customer_id), '') IS NOT NULL
               AND d.id IS NULL
             """
-        ).fetchone()[0]
+        ).fetchone()
+        missing_refs_count = int(missing_refs[0]) if missing_refs is not None else 0
         checks.append(
             {
                 "type": "referential",
                 "relation": "charges.customer_id -> customers.id",
-                "missing_refs": missing_refs,
-                "passed": missing_refs == 0,
+                "missing_refs": missing_refs_count,
+                "passed": missing_refs_count == 0,
             }
         )
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import time
 from dataclasses import asdict, dataclass
 from typing import Any
@@ -12,7 +13,7 @@ from payments_pipeline.transform.models import MODEL_EXECUTION_ORDER
 from payments_pipeline.utils.time import dt_partition, utc_now
 
 try:
-    import duckdb
+    duckdb: Any = importlib.import_module("duckdb")
 except Exception:  # pragma: no cover
     duckdb = None
 
