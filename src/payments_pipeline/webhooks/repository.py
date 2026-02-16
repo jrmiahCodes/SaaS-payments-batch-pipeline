@@ -25,7 +25,11 @@ class WebhookRepository:
 
     def __post_init__(self) -> None:
         self.fs = FilesystemAdapter(self.settings.local_data_dir)
-        self.s3 = boto3.client("s3", region_name=self.settings.aws_region) if boto3 and self.settings.pipeline_env == "AWS" else None
+        self.s3 = (
+            boto3.client("s3", region_name=self.settings.aws_region)
+            if boto3 and self.settings.pipeline_env == "AWS"
+            else None
+        )
 
     def _marker_key(self, event_id: str) -> str:
         safe = sanitize_id_for_path(event_id)
@@ -48,7 +52,9 @@ class WebhookRepository:
                 return False
         return self.fs.exists(key)
 
-    def write(self, event_id: str, payload: bytes, headers: dict[str, str], received_ts: str | None = None) -> str:
+    def write(
+        self, event_id: str, payload: bytes, headers: dict[str, str], received_ts: str | None = None
+    ) -> str:
         ts = received_ts or to_iso(utc_now())
         payload_key = self._payload_key(event_id, ts)
         marker_key = self._marker_key(event_id)
@@ -63,7 +69,11 @@ class WebhookRepository:
         if self.settings.pipeline_env == "AWS":
             if not self.s3 or not self.settings.s3_bucket:
                 raise RuntimeError("S3 repository unavailable")
-            self.s3.put_object(Bucket=self.settings.s3_bucket, Key=payload_key, Body=json.dumps(envelope).encode("utf-8"))
+            self.s3.put_object(
+                Bucket=self.settings.s3_bucket,
+                Key=payload_key,
+                Body=json.dumps(envelope).encode("utf-8"),
+            )
             self.s3.put_object(Bucket=self.settings.s3_bucket, Key=marker_key, Body=b"1")
             return f"s3://{self.settings.s3_bucket}/{payload_key}"
 

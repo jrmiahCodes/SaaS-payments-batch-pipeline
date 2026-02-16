@@ -9,7 +9,9 @@ from datetime import UTC, datetime
 from typing import Any
 
 _RUN_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar("run_id", default=None)
-_CORR_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar("correlation_id", default=None)
+_CORR_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "correlation_id", default=None
+)
 
 
 class JsonLogFormatter(logging.Formatter):

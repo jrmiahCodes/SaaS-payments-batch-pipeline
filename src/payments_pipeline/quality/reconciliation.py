@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -30,7 +29,9 @@ def _count_jsonl_records(paths: list[Path]) -> int:
     return total
 
 
-def run_reconciliation(base_dir: Path, manifest_store: ManifestStore, tolerance_ratio: float = 0.01) -> ReconResult:
+def run_reconciliation(
+    base_dir: Path, manifest_store: ManifestStore, tolerance_ratio: float = 0.01
+) -> ReconResult:
     logger = get_logger(__name__)
     checks: list[dict[str, Any]] = []
 
@@ -43,10 +44,16 @@ def run_reconciliation(base_dir: Path, manifest_store: ManifestStore, tolerance_
     conn = duckdb.connect()
 
     for entity in entities:
-        bronze_files = sorted((base_dir / "bronze" / f"source=stripe/entity={entity}").glob("dt=*/run_id=*/part-*.jsonl"))
+        bronze_files = sorted(
+            (base_dir / "bronze" / f"source=stripe/entity={entity}").glob(
+                "dt=*/run_id=*/part-*.jsonl"
+            )
+        )
         bronze_count = _count_jsonl_records(bronze_files)
 
-        silver_files = sorted((base_dir / "silver" / f"source=stripe/entity={entity}").glob("dt=*/data.parquet"))
+        silver_files = sorted(
+            (base_dir / "silver" / f"source=stripe/entity={entity}").glob("dt=*/data.parquet")
+        )
         silver_count = 0
         if silver_files:
             silver_count = conn.execute(
@@ -68,16 +75,21 @@ def run_reconciliation(base_dir: Path, manifest_store: ManifestStore, tolerance_
             }
         )
 
-    customers_latest = sorted((base_dir / "silver/source=stripe/entity=customers").glob("dt=*/data.parquet"))
-    charges_latest = sorted((base_dir / "silver/source=stripe/entity=charges").glob("dt=*/data.parquet"))
+    customers_latest = sorted(
+        (base_dir / "silver/source=stripe/entity=customers").glob("dt=*/data.parquet")
+    )
+    charges_latest = sorted(
+        (base_dir / "silver/source=stripe/entity=charges").glob("dt=*/data.parquet")
+    )
     if customers_latest and charges_latest:
         missing_refs = conn.execute(
             f"""
             SELECT COUNT(*)
             FROM read_parquet('{charges_latest[-1].as_posix()}') c
             LEFT JOIN read_parquet('{customers_latest[-1].as_posix()}') d
-            ON c.customer_id = d.id
-            WHERE c.customer_id IS NOT NULL AND d.id IS NULL
+            ON trim(c.customer_id) = trim(d.id)
+            WHERE nullif(trim(c.customer_id), '') IS NOT NULL
+              AND d.id IS NULL
             """
         ).fetchone()[0]
         checks.append(

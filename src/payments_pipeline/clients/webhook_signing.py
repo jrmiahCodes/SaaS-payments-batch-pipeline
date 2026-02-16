@@ -59,7 +59,7 @@ def verify_signature(
     if tolerance_seconds >= 0 and age > tolerance_seconds:
         raise SignatureVerificationError("Signature timestamp outside tolerance")
 
-    signed_payload = f"{parsed.timestamp}.".encode("utf-8") + payload_bytes
+    signed_payload = f"{parsed.timestamp}.".encode() + payload_bytes
     expected = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
     if not any(hmac.compare_digest(expected, sig) for sig in parsed.signatures):
         raise SignatureVerificationError("Invalid signature")

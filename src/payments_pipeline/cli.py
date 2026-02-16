@@ -121,7 +121,9 @@ def cmd_run_transforms(run_context: RunContext) -> int:
 def cmd_run_quality(run_context: RunContext) -> int:
     schema_results = run_schema_checks(run_context.settings.local_data_dir)
     freshness_results = run_freshness_checks(ManifestStore(run_context.settings.manifests_root))
-    recon_result = run_reconciliation(run_context.settings.local_data_dir, ManifestStore(run_context.settings.manifests_root))
+    recon_result = run_reconciliation(
+        run_context.settings.local_data_dir, ManifestStore(run_context.settings.manifests_root)
+    )
 
     failed = (
         any(not r.passed for r in schema_results)
@@ -162,7 +164,9 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_batch = sub.add_parser("run-batch")
-    p_batch.add_argument("--entity", required=True, choices=["payment_intents", "charges", "invoices", "customers"])
+    p_batch.add_argument(
+        "--entity", required=True, choices=["payment_intents", "charges", "invoices", "customers"]
+    )
     p_batch.add_argument("--days", type=int, default=None)
 
     p_all = sub.add_parser("run-all")
@@ -209,7 +213,9 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 2
     except Exception:
-        get_logger(__name__).exception("pipeline_command_failed", extra={"command": getattr(args, "command", "unknown")})
+        get_logger(__name__).exception(
+            "pipeline_command_failed", extra={"command": getattr(args, "command", "unknown")}
+        )
         return 1
 
 

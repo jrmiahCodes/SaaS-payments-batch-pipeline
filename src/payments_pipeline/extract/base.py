@@ -35,7 +35,9 @@ class BaseExtractor:
     def normalize(self, record: dict[str, Any]) -> dict[str, Any]:
         return record
 
-    def envelope(self, raw: dict[str, Any], run_context: dict[str, Any], correlation_id: str) -> dict[str, Any]:
+    def envelope(
+        self, raw: dict[str, Any], run_context: dict[str, Any], correlation_id: str
+    ) -> dict[str, Any]:
         return {
             "data": raw,
             "meta": {
@@ -48,7 +50,9 @@ class BaseExtractor:
             },
         }
 
-    def extract_window(self, start_ts: int, end_ts: int, run_context: dict[str, Any]) -> ExtractResult:
+    def extract_window(
+        self, start_ts: int, end_ts: int, run_context: dict[str, Any]
+    ) -> ExtractResult:
         correlation_id = new_correlation_id()
         set_run_context(correlation_id=correlation_id)
 
@@ -58,7 +62,9 @@ class BaseExtractor:
             created_lte=end_ts,
             limit=run_context["settings"].max_page_size,
         )
-        wrapped = [self.envelope(row, run_context, correlation_id=correlation_id) for row in records]
+        wrapped = [
+            self.envelope(row, run_context, correlation_id=correlation_id) for row in records
+        ]
         write_result = self.writer.write_bronze_jsonl(self.entity, wrapped, run_context)
         max_created = max((int(item.get("created", 0)) for item in records), default=None)
         self.logger.info(

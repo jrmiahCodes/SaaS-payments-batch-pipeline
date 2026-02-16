@@ -24,8 +24,7 @@ class StripeLikeClient(Protocol):
         created_lte: int | None,
         starting_after: str | None,
         limit: int,
-    ) -> ListPage:
-        ...
+    ) -> ListPage: ...
 
     def iter_entity(
         self,
@@ -34,5 +33,4 @@ class StripeLikeClient(Protocol):
         created_gte: int | None,
         created_lte: int | None,
         limit: int,
-    ) -> tuple[list[dict[str, Any]], dict[str, int]]:
-        ...
+    ) -> tuple[list[dict[str, Any]], dict[str, int]]: ...

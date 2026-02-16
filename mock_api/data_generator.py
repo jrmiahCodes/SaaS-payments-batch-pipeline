@@ -17,7 +17,7 @@ class GenerationConfig:
 
 
 def _stable_id(prefix: str, key: str) -> str:
-    digest = hashlib.sha256(f"{prefix}:{key}".encode("utf-8")).hexdigest()[:24]
+    digest = hashlib.sha256(f"{prefix}:{key}".encode()).hexdigest()[:24]
     return f"{prefix}_{digest}"
 
 

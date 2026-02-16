@@ -60,7 +60,9 @@ class WatermarkStore:
         return path
 
 
-def get_window(entity: str, now_ts: int, days: int, safety_window: int, store: WatermarkStore) -> Window:
+def get_window(
+    entity: str, now_ts: int, days: int, safety_window: int, store: WatermarkStore
+) -> Window:
     state = store.load(entity)
     if state.last_success_created_ts is None:
         start_dt = parse_ts(now_ts) - timedelta(days=days)

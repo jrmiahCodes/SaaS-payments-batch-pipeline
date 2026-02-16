@@ -66,7 +66,13 @@ class MockStripeClient:
             "retries": metrics.get("retries", 0),
             "failures": metrics.get("failures", 0),
         }
-        return ListPage(entity=entity, data=data, has_more=has_more, next_cursor=next_cursor, request_meta=request_meta)
+        return ListPage(
+            entity=entity,
+            data=data,
+            has_more=has_more,
+            next_cursor=next_cursor,
+            request_meta=request_meta,
+        )
 
     def iter_entity(
         self,

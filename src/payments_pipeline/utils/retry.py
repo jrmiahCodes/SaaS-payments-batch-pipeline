@@ -52,7 +52,11 @@ def retry_call(
             if logger:
                 logger.warning(
                     "retrying",
-                    extra={"attempt": attempt, "sleep_seconds": round(sleep_for, 3), "error": str(exc)},
+                    extra={
+                        "attempt": attempt,
+                        "sleep_seconds": round(sleep_for, 3),
+                        "error": str(exc),
+                    },
                 )
             time.sleep(sleep_for)
 

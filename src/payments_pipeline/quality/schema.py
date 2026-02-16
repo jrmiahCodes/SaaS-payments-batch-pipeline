@@ -29,7 +29,9 @@ class CheckResult:
 
 
 def _columns(conn: Any, parquet_path: Path) -> list[str]:
-    rows = conn.execute(f"DESCRIBE SELECT * FROM read_parquet('{parquet_path.as_posix()}')").fetchall()
+    rows = conn.execute(
+        f"DESCRIBE SELECT * FROM read_parquet('{parquet_path.as_posix()}')"
+    ).fetchall()
     return [row[0] for row in rows]
 
 
@@ -44,7 +46,9 @@ def run_schema_checks(base_dir: Path) -> list[CheckResult]:
     for model, rules in MODEL_RULES.items():
         candidates = sorted(base_dir.glob(f"gold/model={model}/dt=*/data.parquet"))
         if not candidates:
-            results.append(CheckResult(model=model, passed=False, messages=["missing parquet output"]))
+            results.append(
+                CheckResult(model=model, passed=False, messages=["missing parquet output"])
+            )
             continue
         parquet_path = candidates[-1]
         cols = set(_columns(conn, parquet_path))

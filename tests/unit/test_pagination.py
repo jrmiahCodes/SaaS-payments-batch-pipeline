@@ -21,7 +21,9 @@ def test_filter_and_paginate_by_created_window() -> None:
 
 def test_pagination_with_starting_after() -> None:
     rows = generate_dataset()["customers"]
-    first_page, _ = filter_and_paginate(rows, created_gte=None, created_lte=None, starting_after=None, limit=3)
+    first_page, _ = filter_and_paginate(
+        rows, created_gte=None, created_lte=None, starting_after=None, limit=3
+    )
     second_page, _ = filter_and_paginate(
         rows,
         created_gte=None,

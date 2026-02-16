@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from payments_pipeline.clients.webhook_signing import SignatureVerificationError, extract_event_id, verify_signature
+from payments_pipeline.clients.webhook_signing import (
+    SignatureVerificationError,
+    extract_event_id,
+    verify_signature,
+)
 from payments_pipeline.config.logging import get_logger
 from payments_pipeline.config.settings import Settings
 from payments_pipeline.webhooks.repository import WebhookRepository
@@ -18,7 +22,9 @@ class HandlerResult:
     stored_path: str | None
 
 
-def handle_stripe_webhook(payload_bytes: bytes, headers: dict[str, str], settings: Settings) -> HandlerResult:
+def handle_stripe_webhook(
+    payload_bytes: bytes, headers: dict[str, str], settings: Settings
+) -> HandlerResult:
     logger = get_logger(__name__)
 
     signature_header = headers.get("stripe-signature") or headers.get("Stripe-Signature")

@@ -47,21 +47,30 @@ def run_transforms(run_context: dict[str, Any]) -> list[TransformMetric]:
         status = "ok"
         try:
             if not spec.sql_path.exists() or not spec.sql_path.read_text(encoding="utf-8").strip():
-                logger.warning("transform_sql_missing_or_empty", extra={"model": spec.name, "path": str(spec.sql_path)})
+                logger.warning(
+                    "transform_sql_missing_or_empty",
+                    extra={"model": spec.name, "path": str(spec.sql_path)},
+                )
                 status = "skipped"
             else:
                 sql = spec.sql_path.read_text(encoding="utf-8")
-                sql = sql.replace("{{LOCAL_DATA_DIR}}", settings.local_data_dir.resolve().as_posix())
+                sql = sql.replace(
+                    "{{LOCAL_DATA_DIR}}", settings.local_data_dir.resolve().as_posix()
+                )
                 conn.execute(sql)
 
                 if spec.layer == "silver":
-                    out_dir = settings.silver_root / "source=stripe" / f"entity={spec.name}" / f"dt={dt}"
+                    out_dir = (
+                        settings.silver_root / "source=stripe" / f"entity={spec.name}" / f"dt={dt}"
+                    )
                 else:
                     out_dir = settings.gold_root / f"model={spec.name}" / f"dt={dt}"
 
                 out_dir.mkdir(parents=True, exist_ok=True)
                 out_path = out_dir / "data.parquet"
-                conn.execute(f"COPY (SELECT * FROM {spec.name}) TO '{out_path.as_posix()}' (FORMAT PARQUET)")
+                conn.execute(
+                    f"COPY (SELECT * FROM {spec.name}) TO '{out_path.as_posix()}' (FORMAT PARQUET)"
+                )
 
                 if spec.layer == "gold":
                     manifest.write_latest_model(spec.name, run_id=run_id, dt=dt, path=str(out_path))
