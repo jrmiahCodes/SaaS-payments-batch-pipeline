@@ -173,7 +173,9 @@ def cmd_run_pipeline(args: argparse.Namespace, run_context: RunContext) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="payments-pipeline")
-    parser.add_argument("--run-id", default=None, help="Explicit run_id for cross-step traceability")
+    parser.add_argument(
+        "--run-id", default=None, help="Explicit run_id for cross-step traceability"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_batch = sub.add_parser("run-batch")
