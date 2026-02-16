@@ -1,0 +1,10 @@
+{
+  "id": "evt_12345",
+  "type": "payment_intent.succeeded",
+  "created": 1700000000,
+  "data": {
+    "object": {
+      "id": "pi_12345"
+    }
+  }
+}

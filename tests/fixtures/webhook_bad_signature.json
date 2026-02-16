@@ -1,0 +1,10 @@
+{
+  "id": "evt_bad_sig",
+  "type": "invoice.payment_failed",
+  "created": 1700000100,
+  "data": {
+    "object": {
+      "id": "in_12345"
+    }
+  }
+}

@@ -1,0 +1,81 @@
+name: Scheduled Batch Run (Demo)
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many days back to load"
+        required: false
+        default: "1"
+  schedule:
+    - cron: "15 7 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PIPELINE_ENV: "LOCAL"
+      LOCAL_DATA_DIR: "./_local_data"
+      MOCK_API_BASE_URL: "http://127.0.0.1:8000"
+      DAYS: ${{ github.event.inputs.days || '1' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Start mock API
+        run: |
+          nohup python -m mock_api.app > mock_api.log 2>&1 &
+          for i in {1..20}; do
+            if curl -sSf http://127.0.0.1:8000/health > /dev/null; then
+              echo "mock api is healthy"
+              break
+            fi
+            sleep 1
+          done
+          curl -sSf http://127.0.0.1:8000/health
+
+      - name: Run extract
+        run: payments-pipeline run-all --days "$DAYS"
+
+      - name: Run transforms
+        run: payments-pipeline run-transforms
+
+      - name: Run quality checks
+        run: payments-pipeline run-quality
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          {
+            echo "## Batch Run Summary"
+            echo "- Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Env: $PIPELINE_ENV"
+            echo "- Local output: $LOCAL_DATA_DIR"
+            echo "- Mock API URL: $MOCK_API_BASE_URL"
+            echo "- Days: $DAYS"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-run-artifacts
+          path: |
+            mock_api.log
+            _local_data/

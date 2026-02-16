@@ -1,0 +1,9 @@
+{
+  "object": "list",
+  "data": [
+    {"id": "ch_001", "created": 1700000000},
+    {"id": "ch_002", "created": 1700000010}
+  ],
+  "has_more": true,
+  "url": "/v1/charges"
+}
