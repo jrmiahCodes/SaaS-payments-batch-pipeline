@@ -28,7 +28,7 @@ jobs:
           rm -rf _site
           mkdir -p _site
           cp -R docs/* _site/
-          cp README.md _site/index.md
+          cp README.md _site/README.md
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

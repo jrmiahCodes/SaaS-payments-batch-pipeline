@@ -26,6 +26,10 @@ class JsonLogFormatter(logging.Formatter):
             "entity": getattr(record, "entity", None),
             "step": getattr(record, "step", None),
         }
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        if record.stack_info:
+            payload["stack"] = self.formatStack(record.stack_info)
         for key, value in record.__dict__.items():
             if key in {
                 "name",

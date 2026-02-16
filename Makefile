@@ -52,6 +52,9 @@ run-transforms: ## Run silver and gold transforms
 run-quality: ## Run schema/freshness/reconciliation checks
 	@source $(VENV)/bin/activate && PIPELINE_ENV=$(PIPELINE_ENV) LOCAL_DATA_DIR=$(LOCAL_DATA_DIR) payments-pipeline run-quality
 
+run-pipeline: ## Run extract -> transform -> quality with one run_id
+	@source $(VENV)/bin/activate && PIPELINE_ENV=$(PIPELINE_ENV) LOCAL_DATA_DIR=$(LOCAL_DATA_DIR) MOCK_API_BASE_URL=$(MOCK_API_BASE_URL) payments-pipeline run-pipeline --days $(DAYS)
+
 run-webhooks: ## Run webhook server (localhost:8000)
 	@source $(VENV)/bin/activate && PIPELINE_ENV=$(PIPELINE_ENV) LOCAL_DATA_DIR=$(LOCAL_DATA_DIR) payments-pipeline run-webhooks --host 0.0.0.0 --port 8000
 

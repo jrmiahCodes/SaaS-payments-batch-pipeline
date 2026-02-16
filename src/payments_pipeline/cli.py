@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -159,8 +160,20 @@ def cmd_run_webhooks(args: argparse.Namespace, run_context: RunContext) -> int:
     return 0
 
 
+def cmd_run_pipeline(args: argparse.Namespace, run_context: RunContext) -> int:
+    args.days = args.days or run_context.settings.default_days
+    extract_exit = cmd_run_all(args, run_context)
+    if extract_exit != 0:
+        return extract_exit
+    transform_exit = cmd_run_transforms(run_context)
+    if transform_exit != 0:
+        return transform_exit
+    return cmd_run_quality(run_context)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="payments-pipeline")
+    parser.add_argument("--run-id", default=None, help="Explicit run_id for cross-step traceability")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_batch = sub.add_parser("run-batch")
@@ -174,6 +187,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("run-transforms")
     sub.add_parser("run-quality")
+    p_pipeline = sub.add_parser("run-pipeline")
+    p_pipeline.add_argument("--days", type=int, default=None)
 
     p_wh = sub.add_parser("run-webhooks")
     p_wh.add_argument("--host", default="0.0.0.0")
@@ -189,8 +204,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         settings = get_settings()
         configure_logging(settings.log_level)
+        run_id = args.run_id or os.getenv("RUN_ID") or new_run_id()
         run_context = RunContext(
-            run_id=new_run_id(),
+            run_id=run_id,
             env=settings.pipeline_env,
             now=datetime.now(tz=UTC),
             settings=settings,
@@ -207,6 +223,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_run_transforms(run_context)
         if args.command == "run-quality":
             return cmd_run_quality(run_context)
+        if args.command == "run-pipeline":
+            return cmd_run_pipeline(args, run_context)
         if args.command == "run-webhooks":
             return cmd_run_webhooks(args, run_context)
 

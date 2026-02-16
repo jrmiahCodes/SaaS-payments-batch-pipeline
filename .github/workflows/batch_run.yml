@@ -50,14 +50,8 @@ jobs:
           done
           curl -sSf http://127.0.0.1:8000/health
 
-      - name: Run extract
-        run: payments-pipeline run-all --days "$DAYS"
-
-      - name: Run transforms
-        run: payments-pipeline run-transforms
-
-      - name: Run quality checks
-        run: payments-pipeline run-quality
+      - name: Run pipeline (extract -> transforms -> quality)
+        run: payments-pipeline run-pipeline --days "$DAYS"
 
       - name: Workflow summary
         if: always()
