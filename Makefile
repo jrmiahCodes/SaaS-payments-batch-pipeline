@@ -37,6 +37,13 @@ typecheck: ## Run mypy type checks
 test: ## Run pytest test suite
 	@source $(VENV)/bin/activate && pytest -q
 
+hooks-install: ## Install git hooks for pre-commit + pre-push checks
+	@source $(VENV)/bin/activate && pre-commit install
+	@source $(VENV)/bin/activate && pre-commit install --hook-type pre-push
+
+hooks-run: ## Run all pre-commit hooks against the repo
+	@source $(VENV)/bin/activate && pre-commit run --all-files
+
 mock-api: ## Run mock Stripe-like API on localhost:8000
 	@source $(VENV)/bin/activate && $(PYTHON) -m mock_api.app
 
